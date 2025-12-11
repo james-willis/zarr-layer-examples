@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Zarr Explorations - JavaScript Examples</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      line-height: 1.6;
+      background-color: #f8f9fa;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 0.5rem;
+    }
+    .subtitle {
+      color: #7f8c8d;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+    .examples-grid {
+      display: grid;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .example-card {
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .example-card:hover {
+      border-color: #007bff;
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+      transform: translateY(-2px);
+    }
+    .example-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #007bff;
+      margin-bottom: 0.5rem;
+    }
+    .example-description {
+      color: #6c757d;
+      margin-bottom: 1rem;
+    }
+    .example-tech {
+      font-size: 0.9rem;
+      color: #495057;
+      background: #f8f9fa;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .footer {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid #e9ecef;
+      text-align: center;
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Zarr Explorations</h1>
+    <p class="subtitle">JavaScript examples using zarr-gl for interactive map visualizations</p>
+    
+    <div class="examples-grid">
+      <a href="basic_example.html" class="example-card">
+        <div class="example-title">Basic Zarr Example</div>
+        <div class="example-description">
+          Demonstrates loading and visualizing a simple local Zarr dataset using MapLibre GL and zarr-gl.
+          
+          This dataset has no extra (non-xy) dimensions to select.
+        </div>
+        <span class="example-tech">Local Data • zarr-gl • MapLibre GL</span>
+      </a>
+      
+      <a href="rainy_day_example.html" class="example-card">
+        <div class="example-title">Weather Data Example</div>
+        <div class="example-description">
+          Visualizes ERA5 weather data from a remote Zarr store, showing rainfall patterns for 2017.
+          Demonstrates time-series data selection and remote data access.
+
+          This dataset includes a time dimension, and we select a specific year.
+        </div>
+        <span class="example-tech">Remote Data • ERA5 • Time Series</span>
+      </a>
+      
+      <a href="public_s3_example.html" class="example-card">
+        <div class="example-title">Public S3 Bucket Example</div>
+        <div class="example-description">
+          Demonstrates loading Zarr data from a public S3 bucket.
+          Shows how to work with publicly accessible cloud-hosted Zarr datasets.
+        </div>
+        <span class="example-tech">Public S3 • Cloud Data</span>
+      </a>
+      
+      <a href="private_s3_example.html" class="example-card">
+        <div class="example-title">Private S3 Bucket Example</div>
+        <div class="example-description">
+          Demonstrates loading Zarr data from a private S3 bucket using AWS SDK presigned URLs.
+          Shows how to integrate AWS authentication with zarr-gl for secure data access.
+        </div>
+        <span class="example-tech">Private S3 • AWS SDK • Presigned URLs</span>
+      </a>
+    </div>
+    
+    <div class="footer">
+      <p>These examples showcase different ways to work with Zarr data in web applications using the zarr-gl library.</p>
+    </div>
+  </div>
+</body>
+</html>

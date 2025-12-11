@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>zarr-gl private S3 example</title>
+  <meta property="og:description" content="zarr-gl example with private S3 bucket using presigned URLs" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <style>
+    body { margin: 0; padding: 0; }
+    html, body, #map { height: 100%; }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<script type="module">
+
+import { ZarrLayer } from "https://esm.sh/gh/james-willis/zarr-gl@69e5fb91c0063c093387f1b163b50ac112a7ee6c/pr-16/zarr-gl.js";import { S3Client, GetObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.691.0?bundle";
+import { getSignedUrl } from "https://esm.sh/@aws-sdk/s3-request-presigner@3.691.0?bundle";
+
+// Configure S3 client with hardcoded credentials
+const s3Client = new S3Client({
+  region: "us-east-2",
+  credentials: {
+    accessKeyId: "...",
+    secretAccessKey: "...",
+    sessionToken: "..."
+  },
+  // Disable config file loading for browser
+  defaultsMode: "standard"
+});
+
+
+// Function to generate presigned URL
+async function getPresignedUrl(s3Uri) {
+  console.log("getPresignedUrl called with:", s3Uri);
+  const match = s3Uri.match(/^s3:\/\/([^\/]+)\/(.+)$/);
+  if (!match) {
+    console.log("Not an S3 URI, returning as-is:", s3Uri);
+    return s3Uri;
+  }
+  
+  const bucket = match[1];
+  const key = match[2];
+  
+  const command = new GetObjectCommand({
+      Bucket: bucket,
+      Key: key
+  });
+
+  return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+}
+
+const map = new maplibregl.Map({
+  container: "map",
+  style: "https://demotiles.maplibre.org/style.json",
+  center: [0, 0],
+  zoom: 2,
+  renderWorldCopies: false,
+});
+
+const layer = new ZarrLayer({
+  map,
+  id: "my-layer",
+  source: "s3://james-zarr-testing-private/example256.zarr",
+  version: 'v2',
+  variable: "my_array",
+  colormap: [[200, 10, 50], [30, 40, 30], [50, 10, 200]],
+  vmin: 20,
+  vmax: 300,
+  opacity: 0.8,
+  invalidate: () => map.triggerRepaint(),
+  transformRequest: async (uri) => {
+    return {
+      url: await getPresignedUrl(uri)
+    };
+  }
+});
+
+map.on("load", () => {
+  map.addLayer(layer);
+});
+</script>
+</body>
+</html>
