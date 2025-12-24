@@ -1,8 +1,6 @@
-# Zarr-GL Examples
+# Zarr-Layer Examples
 
-A collection of interactive web examples demonstrating how to visualize geospatial Zarr datasets using [zarr-gl](https://github.com/carbonplan/zarr-gl) and MapLibre GL.
-
-A lot of this code is derived from the examples in the [zarr-gl repo](https://github.com/carderne/zarr-gl)
+A collection of interactive web examples demonstrating how to visualize geospatial Zarr datasets using [@carbonplan/zarr-layer](https://github.com/carbonplan/zarr-layer) and MapLibre GL.
 
 ## What's Inside
 
@@ -11,7 +9,7 @@ This repository contains several examples showing different ways to work with Za
 - **Basic Example** - Simple local Zarr dataset visualization
 - **Rainy Day Example** - ERA5 weather data with time-series selection
 - **Public S3 Example** - Loading Zarr data from public cloud storage
-- **Private S3 Example** - Secure access to private S3 buckets using AWS SDK
+- **Private S3 Example** - Secure access to private S3 buckets *(not currently supported by zarr-layer, see [issue #3](https://github.com/carbonplan/zarr-layer/issues/3))*
 
 ## Quick Start
 
@@ -37,6 +35,16 @@ This will:
 
 Then open your browser and navigate to the examples!
 
-## About Zarr-GL
+## TODOs
 
-[zarr-gl](https://github.com/carderne/zarr-gl) is a JavaScript library for visualizing large multidimensional geospatial datasets stored in Zarr format directly in the browser using WebGL.
+Future examples we'd like to add:
+
+- [ ] Multi-band visualization (RGB composites)
+- [ ] Band Math using custom fragment shaders for derived values
+- [ ] Time animation with playback controls
+- [ ] Globe projection example
+- [ ] Stacking multiple layers with opacity control, composing with Deck.gl
+
+## About Zarr-Layer
+
+[@carbonplan/zarr-layer](https://github.com/carbonplan/zarr-layer) is a JavaScript library for rendering Zarr datasets in MapLibre or Mapbox GL. It supports v2 and v3 Zarr stores, globe and mercator projections, and custom fragment shaders for advanced visualizations.

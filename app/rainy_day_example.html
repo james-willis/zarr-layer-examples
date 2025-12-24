@@ -1,94 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>zarr-gl basic example</title>
-  <meta property="og:description" content="Basic no-build zarr-gl example" />
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
-  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-  <style>
-    body { margin: 0; padding: 0; }
-    html, body, #map { height: 100%; }
-    #controls {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: white;
-      padding: 10px;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      z-index: 1;
-    }
-    #controls label {
-      display: block;
-      margin-bottom: 5px;
-      font-family: sans-serif;
-      font-size: 14px;
-      font-weight: bold;
-    }
-    #controls select {
-      padding: 5px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-  </style>
+    <title>zarr-layer rainy day example</title>
+    <meta property="og:description" content="Rainy day zarr-layer example with year selector"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"/>
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body, #map {
+            height: 100%;
+        }
+
+        #controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        #controls label {
+            display: block;
+            margin-bottom: 5px;
+            font-family: sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        #controls select {
+            padding: 5px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
 </head>
 <body>
 <div id="map"></div>
 <div id="controls">
-  <label for="year-select">Year:</label>
-  <select id="year-select">
-    <option value="2015">2015</option>
-    <option value="2016">2016</option>
-    <option value="2017" selected>2017</option>
-    <option value="2018">2018</option>
-    <option value="2019">2019</option>
-    <option value="2020">2020</option>
-  </select>
+    <label for="year-select">Year:</label>
+    <select id="year-select">
+        <option value="2015">2015</option>
+        <option value="2016">2016</option>
+        <option value="2017" selected>2017</option>
+        <option value="2018">2018</option>
+        <option value="2019">2019</option>
+        <option value="2020">2020</option>
+    </select>
 </div>
 <script type="module">
-import { ZarrLayer } from "https://esm.sh/gh/james-willis/zarr-gl@69e5fb91c0063c093387f1b163b50ac112a7ee6c/pr-16/zarr-gl.js";const map = new maplibregl.Map({
-  container: "map",
-  style: "https://demotiles.maplibre.org/style.json",
-  center: [0, 0],
-  zoom: 3,
-  renderWorldCopies: false,
-});
-const layer = new ZarrLayer({
-  map,
-  id: "my-layer",
-  source: "https://weathermapdata.rdrn.me/era5_2015_2020_l5.zarr",
-  version: 'v2',
-  variable: "all_ok",
-  colormap: [[200, 10, 50], [30, 40, 30], [50, 10, 200]],
-  selector: { year: 2017 },
-  vmin: 0,
-  vmax: 365,
-  opacity: 0.8,
-  invalidate: () => map.triggerRepaint(),
-});
-map.on("load", () => {
-  map.addLayer(layer);
-});
+    import {ZarrLayer} from "https://esm.sh/@carbonplan/zarr-layer";
 
-// Handle year selection change
-document.getElementById("year-select").addEventListener("change", async (e) => {
-  const year = parseInt(e.target.value);
-  console.log('Changing year to:', year);
-  
-  // Clear cached tile data
-  // There must be a better way to do this?
-  Object.values(layer.tiles).forEach(tile => {
-    tile.data = null;
-    tile.dataCache = {};
-  });
-  
-  // Update selector and prefetch
-  layer.selector = { year };
-  await layer.prefetchTileData();
-});
+    const map = new maplibregl.Map({
+        container: "map",
+        style: "https://demotiles.maplibre.org/style.json",
+        center: [0, 0],
+        zoom: 3,
+        renderWorldCopies: false,
+    });
+
+    let layer;
+
+    map.on("load", () => {
+        layer = new ZarrLayer({
+            id: "my-layer",
+            source: "https://weathermapdata.rdrn.me/era5_2015_2020_l5.zarr",
+            variable: "all_ok",
+            selector: {year: 2017},
+            colormap: [[200, 10, 50], [30, 40, 30], [50, 10, 200]],
+            clim: [0, 365],
+            opacity: 0.8,
+        });
+
+        map.addLayer(layer);
+    });
+
+    // Handle year selection change
+    document.getElementById("year-select").addEventListener("change", (e) => {
+        const year = parseInt(e.target.value);
+        console.log('Changing year to:', year);
+
+        if (layer) {
+            layer.updateSource({
+                selector: {year},
+            });
+        }
+    });
 </script>
 </body>
 </html>

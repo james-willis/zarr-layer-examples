@@ -1,86 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>zarr-gl private S3 example</title>
-  <meta property="og:description" content="zarr-gl example with private S3 bucket using presigned URLs" />
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
-  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-  <style>
-    body { margin: 0; padding: 0; }
-    html, body, #map { height: 100%; }
-  </style>
+    <title>zarr-layer private S3 example</title>
+    <meta property="og:description" content="zarr-layer example with private S3 bucket (NOT CURRENTLY SUPPORTED)"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"/>
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body, #map {
+            height: 100%;
+        }
+
+        .warning-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ff6b6b;
+            color: white;
+            padding: 12px 20px;
+            text-align: center;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .warning-banner a {
+            color: white;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
+<div class="warning-banner">
+    ⚠️ Private S3 buckets are NOT currently supported by @carbonplan/zarr-layer.
+    This example will not work. See <a href="https://github.com/carbonplan/zarr-layer/issues/3" target="_blank">this
+    issue</a> for more details.
+</div>
 <div id="map"></div>
 <script type="module">
+    /*
+     * NOTE: @carbonplan/zarr-layer does NOT currently support private S3 buckets
+     * or custom request transformers (like transformRequest for presigned URLs).
+     *
+     * This example is preserved for reference but will NOT work with private buckets.
+     * See: https://github.com/carbonplan/zarr-layer
+     *
+     * The original zarr-gl library supported this via the `transformRequest` option.
+     */
 
-import { ZarrLayer } from "https://esm.sh/gh/james-willis/zarr-gl@69e5fb91c0063c093387f1b163b50ac112a7ee6c/pr-16/zarr-gl.js";import { S3Client, GetObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.691.0?bundle";
-import { getSignedUrl } from "https://esm.sh/@aws-sdk/s3-request-presigner@3.691.0?bundle";
+    import {ZarrLayer} from "https://esm.sh/@carbonplan/zarr-layer";
+    import {S3Client, GetObjectCommand} from "https://esm.sh/@aws-sdk/client-s3@3.691.0?bundle";
+    import {getSignedUrl} from "https://esm.sh/@aws-sdk/s3-request-presigner@3.691.0?bundle";
 
-// Configure S3 client with hardcoded credentials
-const s3Client = new S3Client({
-  region: "us-east-2",
-  credentials: {
-    accessKeyId: "...",
-    secretAccessKey: "...",
-    sessionToken: "..."
-  },
-  // Disable config file loading for browser
-  defaultsMode: "standard"
-});
+    // Configure S3 client with hardcoded credentials
+    const s3Client = new S3Client({
+        region: "us-east-2",
+        credentials: {
+            accessKeyId: "...",
+            secretAccessKey: "...",
+            sessionToken: "..."
+        },
+        // Disable config file loading for browser
+        defaultsMode: "standard"
+    });
 
 
-// Function to generate presigned URL
-async function getPresignedUrl(s3Uri) {
-  console.log("getPresignedUrl called with:", s3Uri);
-  const match = s3Uri.match(/^s3:\/\/([^\/]+)\/(.+)$/);
-  if (!match) {
-    console.log("Not an S3 URI, returning as-is:", s3Uri);
-    return s3Uri;
-  }
-  
-  const bucket = match[1];
-  const key = match[2];
-  
-  const command = new GetObjectCommand({
-      Bucket: bucket,
-      Key: key
-  });
+    // Function to generate presigned URL
+    async function getPresignedUrl(s3Uri) {
+        console.log("getPresignedUrl called with:", s3Uri);
+        const match = s3Uri.match(/^s3:\/\/([^\/]+)\/(.+)$/);
+        if (!match) {
+            console.log("Not an S3 URI, returning as-is:", s3Uri);
+            return s3Uri;
+        }
 
-  return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-}
+        const bucket = match[1];
+        const key = match[2];
 
-const map = new maplibregl.Map({
-  container: "map",
-  style: "https://demotiles.maplibre.org/style.json",
-  center: [0, 0],
-  zoom: 2,
-  renderWorldCopies: false,
-});
+        const command = new GetObjectCommand({
+            Bucket: bucket,
+            Key: key
+        });
 
-const layer = new ZarrLayer({
-  map,
-  id: "my-layer",
-  source: "s3://james-zarr-testing-private/example256.zarr",
-  version: 'v2',
-  variable: "my_array",
-  colormap: [[200, 10, 50], [30, 40, 30], [50, 10, 200]],
-  vmin: 20,
-  vmax: 300,
-  opacity: 0.8,
-  invalidate: () => map.triggerRepaint(),
-  transformRequest: async (uri) => {
-    return {
-      url: await getPresignedUrl(uri)
-    };
-  }
-});
+        return await getSignedUrl(s3Client, command, {expiresIn: 3600});
+    }
 
-map.on("load", () => {
-  map.addLayer(layer);
-});
+    const map = new maplibregl.Map({
+        container: "map",
+        style: "https://demotiles.maplibre.org/style.json",
+        center: [0, 0],
+        zoom: 2,
+        renderWorldCopies: false,
+    });
+
+    // This will NOT work with private S3 buckets - zarr-layer doesn't support transformRequest
+    const layer = new ZarrLayer({
+        id: "my-layer",
+        source: "s3://james-zarr-testing-private/example256.zarr", // Won't work without auth
+        variable: "my_array",
+        colormap: [[200, 10, 50], [30, 40, 30], [50, 10, 200]],
+        clim: [20, 300],
+        opacity: 0.8,
+    });
+
+    map.on("load", () => {
+        map.addLayer(layer);
+    });
 </script>
 </body>
 </html>

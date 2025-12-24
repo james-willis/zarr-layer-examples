@@ -78,17 +78,17 @@
 <body>
   <div class="container">
     <h1>Zarr Explorations</h1>
-    <p class="subtitle">JavaScript examples using zarr-gl for interactive map visualizations</p>
-    
+    <p class="subtitle">JavaScript examples using zarr-layer for interactive map visualizations</p>
+
     <div class="examples-grid">
       <a href="basic_example.html" class="example-card">
         <div class="example-title">Basic Zarr Example</div>
         <div class="example-description">
-          Demonstrates loading and visualizing a simple local Zarr dataset using MapLibre GL and zarr-gl.
-          
+          Demonstrates loading and visualizing a simple local Zarr dataset using MapLibre GL and zarr-layer.
+
           This dataset has no extra (non-xy) dimensions to select.
         </div>
-        <span class="example-tech">Local Data • zarr-gl • MapLibre GL</span>
+        <span class="example-tech">Local Data • zarr-layer • MapLibre GL</span>
       </a>
       
       <a href="rainy_day_example.html" class="example-card">
@@ -112,17 +112,18 @@
       </a>
       
       <a href="private_s3_example.html" class="example-card">
-        <div class="example-title">Private S3 Bucket Example</div>
+        <div class="example-title">Private S3 Bucket Example (Not Supported)</div>
         <div class="example-description">
-          Demonstrates loading Zarr data from a private S3 bucket using AWS SDK presigned URLs.
-          Shows how to integrate AWS authentication with zarr-gl for secure data access.
+          Private S3 buckets are not currently supported by zarr-layer.
+          This example is preserved for reference but will not work.
+          See <a href="https://github.com/carbonplan/zarr-layer/issues/3">this issue</a> for updates.
         </div>
-        <span class="example-tech">Private S3 • AWS SDK • Presigned URLs</span>
+        <span class="example-tech">Private S3 • Not Supported</span>
       </a>
     </div>
     
     <div class="footer">
-      <p>These examples showcase different ways to work with Zarr data in web applications using the zarr-gl library.</p>
+      <p>These examples showcase different ways to work with Zarr data in web applications using the <a href="https://github.com/carbonplan/zarr-layer">zarr-layer</a> library.</p>
     </div>
   </div>
 </body>
