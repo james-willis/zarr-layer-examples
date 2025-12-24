@@ -84,15 +84,9 @@
         map.addLayer(layer);
     });
 
-    // Handle year selection change
     document.getElementById("year-select").addEventListener("change", (e) => {
-        const year = parseInt(e.target.value);
-        console.log('Changing year to:', year);
-
         if (layer) {
-            layer.updateSource({
-                selector: {year},
-            });
+            layer.setSelector({"year": parseInt(e.target.value)});
         }
     });
 </script>
