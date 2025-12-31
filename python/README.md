@@ -1,1 +1,0 @@
-See parent directory README.md for information about this project.

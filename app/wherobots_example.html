@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>zarr-layer basic example</title>
+    <meta property="og:description" content="Basic no-build zarr-layer example"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"/>
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body, #map {
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script type="importmap">
+{
+  "imports": {
+    "zarrita": "https://esm.sh/zarrita@0.5.4",
+    "proj4": "https://esm.sh/proj4@2.12.1"
+  }
+}
+</script>
+<script type="module">
+    import {ZarrLayer} from "http://localhost:3001/index.mjs";
+
+    const map = new maplibregl.Map({
+        container: "map",
+        style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+        center: [-82.76, 40.13], // Cleveland/Ohio area
+        zoom: 6,
+        renderWorldCopies: false,
+    });
+
+    const layer = new ZarrLayer({
+        id: "my-layer",
+        source: "https://james-zarr-testing.s3.us-east-2.amazonaws.com/wherobots_mosaic_multi_level.zarr",
+        variable: "variables",
+        colormap: [[200, 10, 50], [30, 40, 30], [50, 10, 200]],
+        clim: [20, 300],
+        opacity: 0.8,
+        selector: {
+            band: { selected: 0, type: 'index' },
+            time: { selected: 0, type: 'index' },
+        },
+        // bounds: [-85.78, 37.72, -79.45, 42.29]
+    });
+
+    map.on("load", () => {
+        map.addLayer(layer);
+
+        // Add bounding box to show data extent
+        const bounds = [-85.86, 37.81, -79.66, 42.46]; // [west, south, east, north]
+        map.addSource('bbox', {
+            type: 'geojson',
+            data: {
+                type: 'Feature',
+                geometry: {
+                    type: 'Polygon',
+                    coordinates: [[
+                        [bounds[0], bounds[1]], // SW
+                        [bounds[2], bounds[1]], // SE
+                        [bounds[2], bounds[3]], // NE
+                        [bounds[0], bounds[3]], // NW
+                        [bounds[0], bounds[1]]  // close polygon
+                    ]]
+                }
+            }
+        });
+        map.addLayer({
+            id: 'bbox-outline',
+            type: 'line',
+            source: 'bbox',
+            paint: {
+                'line-color': '#ff0000',
+                'line-width': 3,
+                'line-dasharray': [2, 2]
+            }
+        });
+    });
+</script>
+</body>
+</html>
