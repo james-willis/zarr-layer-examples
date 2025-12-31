@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>zarr-layer basic example</title>
+    <title>zarr-layer wherobots pyramids example</title>
     <meta property="og:description" content="Basic no-build zarr-layer example"/>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -41,7 +41,7 @@
 
     const layer = new ZarrLayer({
         id: "my-layer",
-        source: "https://james-zarr-testing.s3.us-east-2.amazonaws.com/wherobots_mosaic_multi_level.zarr",
+        source: "https://james-zarr-testing.s3.us-east-2.amazonaws.com/wherobots_mosaic_multi_level2.zarr",
         variable: "variables",
         colormap: [[200, 10, 50], [30, 40, 30], [50, 10, 200]],
         clim: [20, 300],
@@ -50,8 +50,59 @@
             band: { selected: 0, type: 'index' },
             time: { selected: 0, type: 'index' },
         },
-        // bounds: [-85.78, 37.72, -79.45, 42.29]
+        bounds: [-85.78, 37.72, -79.45, 42.29],
+        renderingMode: "2d",
     });
+
+    // Function to convert tile coordinates to lat/lng bounds
+    function tileToBounds(x, y, z) {
+        const n = Math.PI - (2 * Math.PI * y) / Math.pow(2, z);
+        const north = (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+        const south = (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n - 2 * Math.PI / Math.pow(2, z)) - Math.exp(-(n - 2 * Math.PI / Math.pow(2, z)))));
+        const west = (x / Math.pow(2, z)) * 360 - 180;
+        const east = ((x + 1) / Math.pow(2, z)) * 360 - 180;
+        return { north, south, east, west };
+    }
+
+    // Function to generate tile grid GeoJSON for current view
+    function generateTileGrid(map) {
+        const bounds = map.getBounds();
+        const zoom = Math.floor(map.getZoom());
+        const features = [];
+
+        // Convert lat/lng to tile coordinates
+        function lngLatToTile(lng, lat, z) {
+            const x = Math.floor(((lng + 180) / 360) * Math.pow(2, z));
+            const latRad = lat * Math.PI / 180;
+            const y = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * Math.pow(2, z));
+            return { x, y };
+        }
+
+        const minTile = lngLatToTile(bounds.getWest(), bounds.getNorth(), zoom);
+        const maxTile = lngLatToTile(bounds.getEast(), bounds.getSouth(), zoom);
+
+        for (let x = minTile.x; x <= maxTile.x; x++) {
+            for (let y = minTile.y; y <= maxTile.y; y++) {
+                const tileBounds = tileToBounds(x, y, zoom);
+                features.push({
+                    type: 'Feature',
+                    properties: { x, y, z: zoom, label: `${zoom}/${x}/${y}` },
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [[
+                            [tileBounds.west, tileBounds.south],
+                            [tileBounds.east, tileBounds.south],
+                            [tileBounds.east, tileBounds.north],
+                            [tileBounds.west, tileBounds.north],
+                            [tileBounds.west, tileBounds.south]
+                        ]]
+                    }
+                });
+            }
+        }
+
+        return { type: 'FeatureCollection', features };
+    }
 
     map.on("load", () => {
         map.addLayer(layer);
@@ -83,6 +134,44 @@
                 'line-width': 3,
                 'line-dasharray': [2, 2]
             }
+        });
+
+        // Add tile grid source and layers
+        map.addSource('tile-grid', {
+            type: 'geojson',
+            data: generateTileGrid(map)
+        });
+
+        map.addLayer({
+            id: 'tile-grid-outline',
+            type: 'line',
+            source: 'tile-grid',
+            paint: {
+                'line-color': '#0066ff',
+                'line-width': 1,
+                'line-opacity': 0.6
+            }
+        });
+
+        map.addLayer({
+            id: 'tile-grid-labels',
+            type: 'symbol',
+            source: 'tile-grid',
+            layout: {
+                'text-field': ['get', 'label'],
+                'text-size': 12,
+                'text-anchor': 'center'
+            },
+            paint: {
+                'text-color': '#0066ff',
+                'text-halo-color': '#ffffff',
+                'text-halo-width': 2
+            }
+        });
+
+        // Update tile grid on map move
+        map.on('moveend', () => {
+            map.getSource('tile-grid').setData(generateTileGrid(map));
         });
     });
 </script>
