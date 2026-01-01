@@ -31,9 +31,12 @@
         renderWorldCopies: false,
     });
 
+    // Convert relative path to absolute URL (zarr-layer requires valid absolute URLs)
+    const zarrUrl = new URL("./example_zarrs/example128v3.zarr", window.location.href).href;
+
     const layer = new ZarrLayer({
         id: "my-layer",
-        source: "./example_zarrs/example128v3.zarr",
+        source: zarrUrl,
         variable: "my_array",
         colormap: [[200, 10, 50], [30, 40, 30], [50, 10, 200]],
         clim: [20, 300],
